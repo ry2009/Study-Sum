@@ -1,0 +1,23 @@
+Flask==2.3.3
+pytube
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+requests
+youtube-transcript-api
+sumy==0.11.0
+scikit-learn>=1.0.0
+matplotlib
+PyPDF2
+python-docx
+python-pptx
+pandas
+numpy
+nltk>=3.6.0
+networkx
+
+# Remove or comment out the problematic packages
+# transformers
+# sentence-transformers
+# tokenizers
+youtube-search-python 

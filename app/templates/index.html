@@ -1,0 +1,474 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="jumbotron p-4 mb-4 bg-light rounded-3">
+    <div class="container">
+        <h1 class="display-5 fw-bold">Video & Document Summarizer</h1>
+        <p class="col-md-8 fs-4">Extract and summarize key information from videos and documents. Generate comprehensive summaries to help you understand content quickly.</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Video Section -->
+    <div class="col-md-6 mb-4" id="video-section">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4>Video Summarizer</h4>
+            </div>
+            <div class="card-body">
+                <form id="video-form">
+                    <div class="mb-3">
+                        <label for="video-url" class="form-label">YouTube Video URL</label>
+                        <input type="url" class="form-control" id="video-url" name="video_url" placeholder="https://www.youtube.com/watch?v=..." required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Summarize Video</button>
+                </form>
+                <div id="video-result" class="mt-3" style="display: none;">
+                    <div class="spinner-border text-primary" role="status" id="video-loading">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <div id="video-content" class="mt-3">
+                        <div id="video-info" class="mb-3"></div>
+                        <h5>Summary</h5>
+                        <div id="video-summary" class="p-3 bg-light rounded"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Section -->
+    <div class="col-md-6 mb-4" id="document-section">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4>Document Summarizer</h4>
+            </div>
+            <div class="card-body">
+                <form id="document-form" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="document-file" class="form-label">Upload Document (PDF, PPTX, DOCX, TXT)</label>
+                        <input type="file" class="form-control" id="document-file" name="document" accept=".pdf,.ppt,.pptx,.doc,.docx,.txt" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Summarize Document</button>
+                </form>
+                <div id="document-result" class="mt-3" style="display: none;">
+                    <div class="spinner-border text-success" role="status" id="document-loading">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <div id="document-content" class="mt-3">
+                        <div id="document-info" class="mb-3"></div>
+                        <h5>Summary</h5>
+                        <div id="document-summary" class="p-3 bg-light rounded"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Generate Content Section -->
+<div class="row mb-4" id="generate-section">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4>Generate Study Materials</h4>
+            </div>
+            <div class="card-body">
+                <p>Combine multiple videos and documents to generate comprehensive study materials.</p>
+                <form id="generate-form">
+                    <div class="mb-3">
+                        <label class="form-label">Select Sources</label>
+                        <div id="selected-sources" class="mb-3">
+                            <p class="text-muted">No sources selected. Process videos or documents first.</p>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="content-topic" class="form-label">Topic</label>
+                        <input type="text" class="form-control" id="content-topic" name="topic" placeholder="Enter the main topic for generated study materials">
+                    </div>
+                    <button type="submit" class="btn btn-info" id="generate-btn" disabled>Generate Study Materials</button>
+                </form>
+                <div id="generate-result" class="mt-3" style="display: none;">
+                    <div class="spinner-border text-info" role="status" id="generate-loading">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <div id="generate-content" class="mt-3">
+                        <h4 class="mb-4">Study Guide: <span id="study-topic"></span></h4>
+                        
+                        <!-- Study Slide -->
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header bg-primary text-white">
+                                        <h5 class="mb-0">Interactive Study Slide</h5>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <img id="content-image" class="img-fluid rounded shadow" alt="Study Slide" style="max-height: 500px;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Learning Points -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header bg-success text-white">
+                                        <h5 class="mb-0">Core Concepts</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul id="core-concepts" class="list-group list-group-flush"></ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header bg-info text-white">
+                                        <h5 class="mb-0">Key Principles</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul id="key-principles" class="list-group list-group-flush"></ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Study Outline -->
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header bg-warning">
+                                        <h5 class="mb-0">Comprehensive Study Outline</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="study-outline" class="accordion">
+                                            <!-- Outline sections will be added here dynamically -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- AI Study Tips -->
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header bg-secondary text-white">
+                                        <h5 class="mb-0">AI Study Suggestions</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul id="ai-suggestions" class="list-group list-group-flush"></ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Global variables to store processed sources
+    const processedSources = [];
+
+    // Handle Video Form Submission
+    $(document).ready(function() {
+        $('#video-form').submit(function(e) {
+            e.preventDefault();
+            const videoUrl = $('#video-url').val();
+            
+            // Show loading indicator
+            $('#video-result').show();
+            $('#video-content').hide();
+            $('#video-loading').show();
+            
+            // Send AJAX request
+            $.ajax({
+                url: '/process_video',
+                type: 'POST',
+                data: { video_url: videoUrl },
+                success: function(response) {
+                    // Hide loading, show content
+                    $('#video-loading').hide();
+                    $('#video-content').show();
+                    
+                    // Display video info
+                    const videoInfo = response.video_info;
+                    $('#video-info').html(`
+                        <div class="d-flex">
+                            <img src="${videoInfo.thumbnail_url}" class="me-3" alt="Thumbnail" style="width: 120px;">
+                            <div>
+                                <h5>${videoInfo.title}</h5>
+                                <p>By: ${videoInfo.author}</p>
+                                <p>Length: ${Math.floor(videoInfo.length / 60)}:${(videoInfo.length % 60).toString().padStart(2, '0')}</p>
+                            </div>
+                        </div>
+                    `);
+                    
+                    // Display summary
+                    $('#video-summary').text(response.summary.summary);
+                    
+                    // Add to processed sources
+                    const sourceId = 'video-' + Date.now();
+                    processedSources.push({
+                        id: sourceId,
+                        type: 'video',
+                        title: videoInfo.title,
+                        summary: response.summary.summary,
+                        url: videoUrl
+                    });
+                    
+                    // Update selected sources
+                    updateSelectedSources();
+                },
+                error: function(error) {
+                    $('#video-loading').hide();
+                    $('#video-content').show();
+                    $('#video-summary').html(`<div class="alert alert-danger">Error: ${error.responseJSON?.error || 'Failed to process video'}</div>`);
+                }
+            });
+        });
+        
+        // Handle Document Form Submission
+        $('#document-form').submit(function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = new FormData(this);
+            
+            // Show loading indicator
+            $('#document-result').show();
+            $('#document-content').hide();
+            $('#document-loading').show();
+            
+            // Send AJAX request
+            $.ajax({
+                url: '/upload_document',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    // Hide loading, show content
+                    $('#document-loading').hide();
+                    $('#document-content').show();
+                    
+                    // Display document info
+                    const documentInfo = response.document_summary;
+                    $('#document-info').html(`
+                        <div>
+                            <h5>Document: ${documentInfo.file_name}</h5>
+                            <p>Sample text: ${documentInfo.text_sample.substring(0, 100)}...</p>
+                        </div>
+                    `);
+                    
+                    // Display summary
+                    $('#document-summary').text(documentInfo.summary);
+                    
+                    // Add to processed sources
+                    const sourceId = 'document-' + Date.now();
+                    processedSources.push({
+                        id: sourceId,
+                        type: 'document',
+                        title: documentInfo.file_name,
+                        summary: documentInfo.summary
+                    });
+                    
+                    // Update selected sources
+                    updateSelectedSources();
+                },
+                error: function(error) {
+                    $('#document-loading').hide();
+                    $('#document-content').show();
+                    $('#document-summary').html(`<div class="alert alert-danger">Error: ${error.responseJSON?.error || 'Failed to process document'}</div>`);
+                }
+            });
+        });
+        
+        // Handle Generate Content Form Submission
+        $('#generate-form').submit(function(e) {
+            e.preventDefault();
+            
+            const topic = $('#content-topic').val();
+            
+            // Show loading indicator
+            $('#generate-result').show();
+            $('#generate-content').hide();
+            $('#generate-loading').show();
+            
+            // Prepare data for the request
+            const data = {
+                topic: topic,
+                sources: processedSources.filter(source => $(`#source-checkbox-${source.id}`).is(':checked'))
+            };
+            
+            // Send AJAX request
+            $.ajax({
+                url: '/generate_content',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function(response) {
+                    // Hide loading, show content
+                    $('#generate-loading').hide();
+                    $('#generate-content').show();
+                    
+                    // Update study topic
+                    $('#study-topic').text(topic);
+                    
+                    // Display the study outline
+                    const studyOutline = response.detailed_summary.study_outline;
+                    $('#study-outline').empty();
+                    
+                    // Add introduction section
+                    if (studyOutline.introduction) {
+                        addOutlineSection('intro', studyOutline.introduction.title, studyOutline.introduction.points);
+                    }
+                    
+                    // Add core content sections
+                    if (studyOutline.core_content) {
+                        const coreContent = studyOutline.core_content;
+                        addOutlineSection('core', coreContent.title, null, true);
+                        
+                        // Add each core content subsection
+                        if (coreContent.sections) {
+                            coreContent.sections.forEach((section, idx) => {
+                                addOutlineSubsection('core', idx, section.title, section.points);
+                            });
+                        }
+                    }
+                    
+                    // Add advanced topics section
+                    if (studyOutline.advanced_topics) {
+                        addOutlineSection('advanced', studyOutline.advanced_topics.title, studyOutline.advanced_topics.points);
+                    }
+                    
+                    // Add applications section
+                    if (studyOutline.applications) {
+                        addOutlineSection('applications', studyOutline.applications.title, studyOutline.applications.points);
+                    }
+                    
+                    // Add conclusion section
+                    if (studyOutline.conclusion) {
+                        addOutlineSection('conclusion', studyOutline.conclusion.title, studyOutline.conclusion.points);
+                    }
+                    
+                    // Display core concepts
+                    $('#core-concepts').empty();
+                    const learningPoints = response.detailed_summary.learning_points;
+                    learningPoints.core_concepts.forEach(concept => {
+                        $('#core-concepts').append(`<li class="list-group-item">${concept}</li>`);
+                    });
+                    
+                    // Display key principles
+                    $('#key-principles').empty();
+                    learningPoints.key_principles.forEach(principle => {
+                        $('#key-principles').append(`<li class="list-group-item">${principle}</li>`);
+                    });
+                    
+                    // Display AI suggestions
+                    $('#ai-suggestions').empty();
+                    if (response.detailed_summary.ai_suggestions) {
+                        response.detailed_summary.ai_suggestions.forEach(suggestion => {
+                            $('#ai-suggestions').append(`
+                                <li class="list-group-item d-flex">
+                                    <div class="me-3 text-primary"><i class="fas fa-lightbulb"></i></div>
+                                    <div>${suggestion}</div>
+                                </li>
+                            `);
+                        });
+                    }
+                    
+                    // Display image
+                    $('#content-image').attr('src', response.detailed_summary.image_path);
+                },
+                error: function(error) {
+                    $('#generate-loading').hide();
+                    $('#generate-content').show();
+                    $('#study-outline').html(`<div class="alert alert-danger">Error: ${error.responseJSON?.error || 'Failed to generate study materials'}</div>`);
+                }
+            });
+        });
+    });
+    
+    // Function to update the Selected Sources section
+    function updateSelectedSources() {
+        const sourcesContainer = $('#selected-sources');
+        
+        if (processedSources.length === 0) {
+            sourcesContainer.html('<p class="text-muted">No sources selected. Process videos or documents first.</p>');
+            $('#generate-btn').prop('disabled', true);
+            return;
+        }
+        
+        // Clear container
+        sourcesContainer.empty();
+        
+        // Create source list
+        processedSources.forEach(source => {
+            sourcesContainer.append(`
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" value="" id="source-checkbox-${source.id}" checked>
+                    <label class="form-check-label" for="source-checkbox-${source.id}">
+                        <strong>${source.type === 'video' ? '📹' : '📄'} ${source.title}</strong>
+                    </label>
+                </div>
+            `);
+        });
+        
+        // Enable generate button
+        $('#generate-btn').prop('disabled', false);
+    }
+
+    // Helper function to add an outline section
+    function addOutlineSection(id, title, points, isParent = false) {
+        const sectionId = `section-${id}`;
+        const html = `
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="heading-${sectionId}">
+                    <button class="accordion-button ${isParent ? '' : 'collapsed'}" type="button" 
+                            data-bs-toggle="collapse" data-bs-target="#collapse-${sectionId}" 
+                            aria-expanded="${isParent ? 'true' : 'false'}" aria-controls="collapse-${sectionId}">
+                        ${title}
+                    </button>
+                </h2>
+                <div id="collapse-${sectionId}" class="accordion-collapse collapse ${isParent ? 'show' : ''}" 
+                     aria-labelledby="heading-${sectionId}" data-bs-parent="#study-outline">
+                    <div class="accordion-body">
+                        ${points ? `<ul class="list-group list-group-flush mb-3">
+                            ${points.map(point => `<li class="list-group-item">${point}</li>`).join('')}
+                        </ul>` : '<div id="' + sectionId + '-content"></div>'}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        $('#study-outline').append(html);
+    }
+
+    // Helper function to add a subsection within a parent section
+    function addOutlineSubsection(parentId, idx, title, points) {
+        const parentSectionId = `section-${parentId}`;
+        const subsectionId = `${parentSectionId}-sub-${idx}`;
+        
+        const html = `
+            <div class="card mb-3">
+                <div class="card-header">
+                    ${title}
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        ${points.map(point => `<li class="list-group-item">${point}</li>`).join('')}
+                    </ul>
+                </div>
+            </div>
+        `;
+        
+        $(`#${parentSectionId}-content`).append(html);
+    }
+</script>
+{% endblock %} 
